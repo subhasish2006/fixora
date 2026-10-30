@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --primary: #1E3A5F;
+    --accent: #0D9488;
+    --accent-glow: #10B981;
+    --silver-glow: #E2E8F0;
+    --bg-light: #F8FAFC;
+    --text-primary: #1F2937;
+    --text-secondary: #6B7280;
+  }
+
+  body {
+    background-color: var(--bg-light);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom background patterns */
+.circuit-grid {
+  background-image: radial-gradient(rgba(13, 148, 136, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+/* Ambient Silver to Light Green Glow */
+.silver-green-glow {
+  background: radial-gradient(
+    circle at 50% 20%, 
+    rgba(226, 232, 240, 0.6) 0%, 
+    rgba(16, 185, 129, 0.25) 35%, 
+    rgba(13, 148, 136, 0.15) 60%, 
+    transparent 80%
+  );
+}
+
+/* Subtle Breathing Zoom Animation for Buttons */
+@keyframes button-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.25);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 15px 30px -5px rgba(16, 185, 129, 0.4);
+  }
+}
+
+.animate-pulse-button {
+  animation: button-pulse 3s infinite ease-in-out;
+}
+/* Interactive Spotlight Glow Effect */
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-card::before {
+  content: '';
+  position: absolute;
+  top: var(--mouse-y, -100px);
+  left: var(--mouse-x, -100px);
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(13, 148, 136, 0.1) 40%, transparent 80%);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  z-index: 0;
+}
+
+.spotlight-card:hover::before {
+  opacity: 1;
+}
+/* Floating Loop Animations for Text & Cards */
+@keyframes float-up-down {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.5deg);
+  }
+}
+
+@keyframes float-down-up {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(8px) rotate(-0.5deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float-up-down 4.5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-down-up 5s ease-in-out infinite;
+}
+
+/* Pause animation on hover at exact position */
+.pause-on-hover:hover,
+.pause-on-hover:hover .animate-float-slow,
+.pause-on-hover:hover .animate-float-reverse {
+  animation-play-state: paused !important;
 }
