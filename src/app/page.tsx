@@ -34,11 +34,12 @@ export default function Home() {
           </span>
         </div>
 
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-          <a href="#how-it-works" className="hover:text-[#1E3A5F] transition-colors">How It Works</a>
-          <a href="#benefits" className="hover:text-[#1E3A5F] transition-colors">Why Fixora</a>
-          <a href="#impact" className="hover:text-[#1E3A5F] transition-colors">Impact</a>
-          <Link href="/dashboard" className="hover:text-[#0D9488] font-semibold transition-colors">Dashboard</Link>
+        <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-gray-600">
+          <Link href="/about" className="hover:text-[#0D9488] transition-colors">About</Link>
+          <a href="#how-it-works" className="hover:text-[#0D9488] transition-colors">Features</a>
+          <Link href="/contact" className="hover:text-[#0D9488] transition-colors">Contact</Link>
+          <Link href="/privacy" className="hover:text-[#0D9488] transition-colors">Privacy policy</Link>
+          <Link href="/dashboard" className="text-[#1E3A5F] hover:text-[#0D9488] transition-colors">Dashboard</Link>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -247,8 +248,22 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="max-w-7xl mx-auto px-6 py-8 text-center text-xs text-[#6B7280] border-t border-gray-200/60">
-        © Fixora. AI-Powered Electronics Diagnosis + Verified Local Repair Platform.
+      <footer className="max-w-7xl mx-auto px-6 py-8 border-t border-gray-200/60 relative z-10">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-[#6B7280]">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-[#1E3A5F] text-sm">Fixora</span>
+            <span>• AI Diagnostics & Local Repair Platform</span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <Link href="/about" className="hover:text-[#0D9488] transition-colors">About</Link>
+            <a href="#how-it-works" className="hover:text-[#0D9488] transition-colors">Features</a>
+            <Link href="/contact" className="hover:text-[#0D9488] transition-colors">Contact</Link>
+            <Link href="/privacy" className="hover:text-[#0D9488] transition-colors">Privacy policy</Link>
+          </div>
+
+          <div>© 2026 Fixora. All rights reserved.</div>
+        </div>
       </footer>
     </div>
   );
