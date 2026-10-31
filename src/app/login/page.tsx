@@ -8,13 +8,13 @@ import MonkeyMascot from '../MonkeyMascot';
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-slate-900 flex flex-col justify-between p-6">
       
       {/* Cool Animated Background Gradient Orbs */}
       <div className="absolute inset-0 pointer-events-none z-0">
-        {/* Top-Left Deep Navy Orb */}
         <motion.div 
           animate={{
             scale: [1, 1.2, 1],
@@ -24,7 +24,6 @@ export default function LoginPage() {
           transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
           className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-[#1E3A5F]/60 blur-3xl"
         />
-        {/* Center-Right Vibrant Teal Orb */}
         <motion.div 
           animate={{
             scale: [1.1, 1, 1.1],
@@ -34,7 +33,6 @@ export default function LoginPage() {
           transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
           className="absolute top-1/3 -right-20 w-[30rem] h-[30rem] rounded-full bg-[#0D9488]/40 blur-3xl"
         />
-        {/* Bottom-Left Cyan Ambient Orb */}
         <motion.div 
           animate={{
             scale: [1, 1.25, 1],
@@ -44,7 +42,6 @@ export default function LoginPage() {
           transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
           className="absolute -bottom-20 left-1/4 w-96 h-96 rounded-full bg-cyan-500/25 blur-3xl"
         />
-        {/* Subtle Circuit Grid Overlay */}
         <div className="absolute inset-0 opacity-10 circuit-grid" />
       </div>
 
@@ -74,7 +71,7 @@ export default function LoginPage() {
         >
           <div className="text-center space-y-2">
             <div className="flex justify-center mb-2">
-              <MonkeyMascot />
+              <MonkeyMascot isPasswordFocused={isPasswordFocused} showPassword={showPassword} />
             </div>
             <h1 className="text-2xl font-extrabold text-[#1E3A5F] tracking-tight">Welcome Back</h1>
             <p className="text-xs text-gray-500">Sign in to access your saved diagnostic reports.</p>
@@ -102,6 +99,8 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'} 
                   required
                   placeholder="••••••••" 
+                  onFocus={() => setIsPasswordFocused(true)}
+                  onBlur={() => setIsPasswordFocused(false)}
                   className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 text-xs bg-slate-50 focus:bg-white focus:outline-none focus:border-[#0D9488] transition-all"
                 />
                 <button
@@ -131,7 +130,6 @@ export default function LoginPage() {
         </motion.div>
       </main>
 
-      {/* Footer */}
       <footer className="relative z-10 text-center text-xs text-slate-400">
         @ Fixora. Verified Electronics Repair.
       </footer>
