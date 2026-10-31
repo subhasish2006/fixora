@@ -2,15 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { 
   Cpu, ArrowLeft, Sparkles, ShieldCheck, Heart, 
   Zap, MapPin, Recycle, CheckCircle2, ArrowRight 
 } from 'lucide-react';
 
 export default function AboutPage() {
-  // Framer Motion Animation Variants
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -18,7 +17,7 @@ export default function AboutPage() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 24 },
     visible: { 
       opacity: 1, 
@@ -59,7 +58,6 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen circuit-grid bg-[#F8FAFC] text-[#1F2937] pb-20">
-      {/* Navigation Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200/80">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#1E3A5F] hover:text-[#0D9488] transition-colors">
@@ -75,11 +73,10 @@ export default function AboutPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 pt-12 space-y-16">
-        {/* Animated Hero Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: 0.6 }}
           className="text-center space-y-4"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-50 border border-teal-200/80 text-[#0D9488] text-xs font-semibold shadow-xs">
@@ -96,7 +93,6 @@ export default function AboutPage() {
           </p>
         </motion.div>
 
-        {/* Animated Metrics Banner */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -115,7 +111,6 @@ export default function AboutPage() {
           ))}
         </motion.div>
 
-        {/* Core Pillars Grid */}
         <div className="space-y-8">
           <div className="text-center space-y-2">
             <h2 className="text-2xl font-bold text-[#1E3A5F]">The Fixora Ecosystem</h2>
@@ -146,7 +141,6 @@ export default function AboutPage() {
           </motion.div>
         </div>
 
-        {/* Regional Impact Card */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -178,7 +172,6 @@ export default function AboutPage() {
           </div>
         </motion.div>
 
-        {/* Interactive Call to Action Banner */}
         <motion.div 
           whileHover={{ scale: 1.01 }}
           transition={{ duration: 0.2 }}
