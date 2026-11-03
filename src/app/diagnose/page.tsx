@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import DiagnosticSimulator from '../DiagnosticSimulator';
 import { 
   Cpu, 
   Smartphone, 
@@ -16,7 +17,9 @@ import {
   RotateCcw,
   X,
   Phone,
-  Wrench
+  Wrench,
+  Layers,
+  ShieldCheck
 } from 'lucide-react';
 
 const GENUINE_LOCAL_SHOPS = [
@@ -107,6 +110,7 @@ const DIAGNOSIS_ISSUES_POOL = [
 ];
 
 export default function DiagnosePage() {
+  const [activeTab, setActiveTab] = useState<'simulator' | 'wizard'>('simulator');
   const [step, setStep] = useState<'input' | 'scanning' | 'results'>('input');
   const [deviceType, setDeviceType] = useState<'phone' | 'laptop' | 'other'>('phone');
   const [symptom, setSymptom] = useState('');
@@ -118,7 +122,6 @@ export default function DiagnosePage() {
   const [targetScore, setTargetScore] = useState(84);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // File Loader Function
   const loadFile = (file: File) => {
     if (file && file.type.startsWith('image/')) {
       const url = URL.createObjectURL(file);
@@ -126,13 +129,11 @@ export default function DiagnosePage() {
     }
   };
 
-  // Click File Selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) loadFile(file);
   };
 
-  // Drag and Drop Event Handlers
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -149,7 +150,6 @@ export default function DiagnosePage() {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-
     const file = e.dataTransfer.files?.[0];
     if (file) loadFile(file);
   };
@@ -165,7 +165,6 @@ export default function DiagnosePage() {
     const minScore = randomIssue.scoreRange[0];
     const maxScore = randomIssue.scoreRange[1];
     const calculatedScore = Math.floor(Math.random() * (maxScore - minScore + 1)) + minScore;
-
     setActiveDiagnosis(randomIssue);
     setTargetScore(calculatedScore);
     setStep('scanning');
@@ -184,7 +183,6 @@ export default function DiagnosePage() {
           return prev + 3;
         });
       }, 45);
-
       return () => clearInterval(interval);
     }
   }, [step]);
@@ -195,20 +193,19 @@ export default function DiagnosePage() {
       const steps = 30;
       const stepTime = duration / steps;
       let currentStep = 0;
-
       const timer = setInterval(() => {
         currentStep++;
         const progress = currentStep / steps;
         setAnimatedScore(Math.round(targetScore * progress));
         if (currentStep >= steps) clearInterval(timer);
       }, stepTime);
-
       return () => clearInterval(timer);
     }
   }, [step, targetScore]);
 
   return (
     <div className="min-h-screen circuit-grid bg-[#F8FAFC] pb-20">
+      {/* Header Bar */}
       <header className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
         <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#1E3A5F] hover:text-[#0D9488] transition-colors">
           <ArrowLeft className="w-4 h-4" />
@@ -222,283 +219,384 @@ export default function DiagnosePage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-6 pt-6">
-        <AnimatePresence mode="wait">
-          {step === 'input' && (
-            <motion.div
-              key="input-step"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              className="space-y-8"
+      {/* Main Container */}
+      <main className="max-w-5xl mx-auto px-6 pt-4 space-y-8">
+        
+        {/* Mode Selector Tabs */}
+        <div className="flex justify-center">
+          <div className="inline-flex p-1.5 rounded-2xl bg-slate-200/80 border border-slate-300/80 text-xs font-semibold shadow-inner">
+            <button
+              onClick={() => setActiveTab('simulator')}
+              className={`px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 ${
+                activeTab === 'simulator'
+                  ? 'bg-[#1E3A5F] text-white shadow-md'
+                  : 'text-slate-600 hover:text-[#1E3A5F]'
+              }`}
             >
-              <div className="text-center">
-                <h1 className="text-3xl font-extrabold text-[#1F2937] mb-2">Smart Hardware Diagnosis</h1>
-                <p className="text-sm text-[#6B7280]">Select your device, upload a photo, or describe symptoms for instant AI scanning.</p>
-              </div>
-
-              {/* Device Category Selector */}
-              <div className="glass-card p-6 rounded-2xl space-y-4 shadow-sm">
-                <label className="text-sm font-semibold text-[#1F2937] block">1. Select Device Category</label>
-                <div className="grid grid-cols-3 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setDeviceType('phone')}
-                    className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
-                      deviceType === 'phone'
-                        ? 'border-[#0D9488] bg-teal-50/50 text-[#0D9488] shadow-sm'
-                        : 'border-gray-200 text-[#6B7280] hover:border-gray-300'
-                    }`}
-                  >
-                    <Smartphone className="w-7 h-7" />
-                    <span className="text-xs font-semibold">Smartphone</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setDeviceType('laptop')}
-                    className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
-                      deviceType === 'laptop'
-                        ? 'border-[#0D9488] bg-teal-50/50 text-[#0D9488] shadow-sm'
-                        : 'border-gray-200 text-[#6B7280] hover:border-gray-300'
-                    }`}
-                  >
-                    <Laptop className="w-7 h-7" />
-                    <span className="text-xs font-semibold">Laptop</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setDeviceType('other')}
-                    className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
-                      deviceType === 'other'
-                        ? 'border-[#0D9488] bg-teal-50/50 text-[#0D9488] shadow-sm'
-                        : 'border-gray-200 text-[#6B7280] hover:border-gray-300'
-                    }`}
-                  >
-                    <HelpCircle className="w-7 h-7" />
-                    <span className="text-xs font-semibold">Other Gadget</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Enhanced Drag & Drop Photo Upload Zone */}
-              <div className="glass-card p-6 rounded-2xl space-y-4 shadow-sm">
-                <label className="text-sm font-semibold text-[#1F2937] block">2. Upload Device Photo</label>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-
-                {imagePreview ? (
-                  <div className="relative rounded-xl overflow-hidden border border-teal-500/40 bg-slate-900 flex items-center justify-center p-4 h-56 shadow-inner">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imagePreview}
-                      alt="Device hardware preview"
-                      className="max-h-full max-w-full object-contain rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleRemoveImage}
-                      className="absolute top-3 right-3 p-2 bg-red-500/90 hover:bg-red-600 text-white rounded-full transition-colors shadow-lg"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                    <span className="absolute bottom-3 left-3 bg-slate-900/90 text-emerald-400 text-[11px] px-3 py-1 rounded-full border border-emerald-500/30 font-mono shadow-sm">
-                      ✓ Image Loaded for AI Analysis
-                    </span>
-                  </div>
-                ) : (
-                  <div 
-                    onClick={() => fileInputRef.current?.click()}
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
-                      isDragging 
-                        ? 'border-[#0D9488] bg-teal-100/50 scale-[1.01]' 
-                        : 'border-teal-500/30 hover:border-[#0D9488] bg-teal-50/20 hover:bg-teal-50/40'
-                    }`}
-                  >
-                    <UploadCloud className="w-10 h-10 text-[#0D9488] mx-auto mb-2 animate-bounce" />
-                    <p className="text-sm font-semibold text-[#1F2937]">
-                      {isDragging ? 'Drop your image file here' : 'Click to browse or drag & drop image here'}
-                    </p>
-                    <p className="text-xs text-[#6B7280] mt-1">Supports PNG, JPG, WEBP, GIF up to 10MB</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Symptom Input */}
-              <div className="glass-card p-6 rounded-2xl space-y-4 shadow-sm">
-                <label className="text-sm font-semibold text-[#1F2937] block">3. Describe Symptoms</label>
-                <textarea
-                  value={symptom}
-                  onChange={(e) => setSymptom(e.target.value)}
-                  placeholder="E.g., Screen flickering near top bezel, rapid battery drain, or device heating up while charging..."
-                  className="w-full h-28 p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#0D9488] text-sm text-[#1F2937] bg-white resize-none"
-                />
-              </div>
-
-              {/* Action Button */}
-              <button
-                onClick={handleStartDiagnosis}
-                className="w-full py-4 bg-[#0D9488] hover:bg-[#0b7a70] text-white font-semibold rounded-xl shadow-lg shadow-teal-600/20 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <Sparkles className="w-5 h-5" />
-                <span>Start AI Diagnosis</span>
-              </button>
-            </motion.div>
-          )}
-
-          {step === 'scanning' && (
-            <motion.div
-              key="scanning-step"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="glass-card p-12 rounded-3xl text-center space-y-8 shadow-xl relative overflow-hidden"
+              <Sparkles className="w-4 h-4 text-teal-400" /> AI Vision Simulator Radar
+            </button>
+            <button
+              onClick={() => setActiveTab('wizard')}
+              className={`px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 ${
+                activeTab === 'wizard'
+                  ? 'bg-[#1E3A5F] text-white shadow-md'
+                  : 'text-slate-600 hover:text-[#1E3A5F]'
+              }`}
             >
-              <div className="w-24 h-24 mx-auto rounded-full bg-teal-50 text-[#0D9488] flex items-center justify-center relative shadow-inner">
-                <Cpu className="w-12 h-12 animate-pulse" />
-                <div className="absolute inset-0 rounded-full border-2 border-[#0D9488] animate-ping opacity-25" />
-              </div>
+              <Layers className="w-4 h-4 text-teal-400" /> Diagnostic Form Wizard
+            </button>
+          </div>
+        </div>
 
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold text-[#1F2937]">AI Visual Scan in Progress</h2>
-                <p className="text-xs text-[#6B7280]">Analyzing component degradation and checking local repair shop ratings...</p>
-              </div>
+        {/* TAB 1: AI Vision Neural Simulator Component */}
+        {activeTab === 'simulator' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-12"
+          >
+            <div className="text-center space-y-2">
+              <h1 className="text-3xl font-extrabold text-[#1F2937]">Neural Hardware Vision Radar</h1>
+              <p className="text-sm text-[#6B7280] max-w-xl mx-auto">
+                Test real-time defect isolation, bounding box coordinates, and itemized spare-part pricing using computer vision models.
+              </p>
+            </div>
 
-              <div className="max-w-md mx-auto space-y-2">
-                <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-200">
-                  <motion.div 
-                    className="h-full bg-gradient-to-r from-[#1E3A5F] via-[#0D9488] to-[#10B981] rounded-full"
-                    style={{ width: `${scanProgress}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-[#6B7280] font-mono">
-                  <span>Processing...</span>
-                  <span>{scanProgress}%</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
+            {/* Embedded DiagnosticSimulator Component */}
+            <DiagnosticSimulator />
 
-          {step === 'results' && (
-            <motion.div
-              key="results-step"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-8"
-            >
-              <div className="glass-card p-6 rounded-2xl flex items-center justify-between">
+            {/* Verified Shops Section */}
+            <div className="space-y-6 pt-6 border-t border-slate-200">
+              <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
-                  <span className="text-xs font-semibold text-[#0D9488] uppercase tracking-wider">Diagnosis Complete</span>
-                  <h2 className="text-xl font-bold text-[#1F2937]">{activeDiagnosis.title}</h2>
-                  <p className="text-xs text-[#6B7280] mt-1">{activeDiagnosis.desc}</p>
+                  <h3 className="text-xl font-bold text-[#1F2937]">Verified Repair Partners Nearby</h3>
+                  <p className="text-xs text-[#6B7280]">Top-rated local technicians across Vijayawada, Guntur & Amaravati</p>
                 </div>
-                <button
-                  onClick={() => setStep('input')}
-                  className="p-2 text-[#6B7280] hover:text-[#1E3A5F] rounded-lg border border-gray-200 hover:bg-gray-50 flex items-center gap-1 text-xs shrink-0 ml-4"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Re-Diagnose
-                </button>
+                <span className="text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">
+                  {GENUINE_LOCAL_SHOPS.length} Real Shops Found
+                </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="glass-card p-6 rounded-2xl text-center flex flex-col justify-between shadow-sm">
-                  <span className="text-xs font-semibold text-[#6B7280]">Repairability Score</span>
-                  <div className="my-4">
-                    <span className="text-5xl font-extrabold text-[#0D9488]">{animatedScore}</span>
-                    <span className="text-lg font-bold text-gray-400">/100</span>
-                  </div>
-                  <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full mx-auto">
-                    {animatedScore > 80 ? 'Highly Repairable' : 'Moderate Repair'}
-                  </span>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {GENUINE_LOCAL_SHOPS.map((shop, index) => (
+                  <motion.div
+                    key={shop.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="glass-card p-5 rounded-2xl flex flex-col justify-between gap-4 border border-slate-200 hover:shadow-md transition-all bg-white/90"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#0D9488] flex items-center justify-center font-bold text-lg shrink-0">
+                        <Wrench className="w-5 h-5" />
+                      </div>
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-bold text-[#1F2937] text-xs truncate">{shop.name}</h4>
+                          <span className="inline-flex items-center gap-1 text-[11px] bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full font-bold border border-amber-200">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> {shop.rating.toFixed(1)} ({shop.reviewCount})
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#6B7280] flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-teal-600 shrink-0" />
+                          <span className="truncate">{shop.address}</span>
+                        </p>
+                        <p className="text-[11px] text-teal-700 font-medium">
+                          • {shop.specialty} ({shop.distance})
+                        </p>
+                      </div>
+                    </div>
 
-                <div className="glass-card p-6 rounded-2xl text-center flex flex-col justify-between shadow-sm">
-                  <span className="text-xs font-semibold text-[#6B7280]">Estimated Cost Range</span>
-                  <div className="my-4">
-                    <span className="text-2xl md:text-3xl font-extrabold text-[#1E3A5F]">
-                      {activeDiagnosis.costRange[0]} - {activeDiagnosis.costRange[1]}
-                    </span>
-                  </div>
-                  <span className="text-xs text-[#6B7280]">Includes OEM parts & labor</span>
-                </div>
-
-                <div className="glass-card p-6 rounded-2xl text-center flex flex-col justify-between shadow-sm">
-                  <span className="text-xs font-semibold text-[#6B7280]">Estimated Service Time</span>
-                  <div className="my-4">
-                    <span className="text-2xl md:text-3xl font-extrabold text-[#1F2937]">{activeDiagnosis.time}</span>
-                  </div>
-                  <span className="text-xs text-emerald-600 font-medium">Same-day local service</span>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-[#1F2937]">Verified Repair Shops Nearby</h3>
-                    <p className="text-xs text-[#6B7280]">Sorted by highest Google Maps rating across Vijayawada, Guntur & Amaravati</p>
-                  </div>
-                  <span className="text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">
-                    {GENUINE_LOCAL_SHOPS.length} Real Shops Found
-                  </span>
-                </div>
-
-                <div className="space-y-4">
-                  {GENUINE_LOCAL_SHOPS.map((shop, index) => (
-                    <motion.div
-                      key={shop.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.08 }}
-                      className="glass-card p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:shadow-md transition-shadow border border-slate-200"
+                    <a
+                      href={`tel:${shop.phone}`}
+                      className="w-full py-2.5 bg-[#1E3A5F] hover:bg-[#152a45] text-white text-xs font-semibold rounded-xl transition-colors shadow-xs flex items-center justify-center gap-2"
                     >
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-teal-50 text-[#0D9488] flex items-center justify-center font-bold text-lg shrink-0">
-                          <Wrench className="w-6 h-6" />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-bold text-[#1F2937] text-sm">{shop.name}</h4>
-                            <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-800 px-2.5 py-0.5 rounded-full font-bold border border-amber-200">
-                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /> {shop.rating.toFixed(1)} ({shop.reviewCount} reviews)
-                            </span>
-                          </div>
-                          <p className="text-xs text-[#6B7280] flex items-center gap-1.5">
-                            <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                            <span>{shop.address}</span>
-                          </p>
-                          <p className="text-[11px] text-teal-700 font-medium flex items-center gap-2">
-                            <span>• {shop.specialty}</span>
-                            <span>• {shop.distance} from your area</span>
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0">
-                        <a
-                          href={`tel:${shop.phone}`}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E3A5F] hover:bg-[#152a45] text-white text-xs font-semibold rounded-xl transition-colors shadow-sm"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>Call {shop.phone}</span>
-                        </a>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                      <Phone className="w-3.5 h-3.5" />
+                      <span>Call {shop.phone}</span>
+                    </a>
+                  </motion.div>
+                ))}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+
+        {/* TAB 2: Multi-Step Form Diagnostic Wizard */}
+        {activeTab === 'wizard' && (
+          <div className="max-w-3xl mx-auto">
+            <AnimatePresence mode="wait">
+              {step === 'input' && (
+                <motion.div
+                  key="input-step"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  className="space-y-8"
+                >
+                  <div className="text-center">
+                    <h1 className="text-3xl font-extrabold text-[#1F2937] mb-2">Smart Hardware Diagnosis</h1>
+                    <p className="text-sm text-[#6B7280]">Select your device, upload a photo, or describe symptoms for instant AI scanning.</p>
+                  </div>
+                  
+                  {/* Device Category Selector */}
+                  <div className="glass-card p-6 rounded-2xl space-y-4 shadow-sm bg-white/90 border border-gray-200">
+                    <label className="text-sm font-semibold text-[#1F2937] block">1. Select Device Category</label>
+                    <div className="grid grid-cols-3 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setDeviceType('phone')}
+                        className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
+                          deviceType === 'phone'
+                            ? 'border-[#0D9488] bg-teal-50/50 text-[#0D9488] shadow-sm'
+                            : 'border-gray-200 text-[#6B7280] hover:border-gray-300'
+                        }`}
+                      >
+                        <Smartphone className="w-7 h-7" />
+                        <span className="text-xs font-semibold">Smartphone</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeviceType('laptop')}
+                        className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
+                          deviceType === 'laptop'
+                            ? 'border-[#0D9488] bg-teal-50/50 text-[#0D9488] shadow-sm'
+                            : 'border-gray-200 text-[#6B7280] hover:border-gray-300'
+                        }`}
+                      >
+                        <Laptop className="w-7 h-7" />
+                        <span className="text-xs font-semibold">Laptop</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeviceType('other')}
+                        className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
+                          deviceType === 'other'
+                            ? 'border-[#0D9488] bg-teal-50/50 text-[#0D9488] shadow-sm'
+                            : 'border-gray-200 text-[#6B7280] hover:border-gray-300'
+                        }`}
+                      >
+                        <HelpCircle className="w-7 h-7" />
+                        <span className="text-xs font-semibold">Other Gadget</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Drag & Drop Photo Upload Zone */}
+                  <div className="glass-card p-6 rounded-2xl space-y-4 shadow-sm bg-white/90 border border-gray-200">
+                    <label className="text-sm font-semibold text-[#1F2937] block">2. Upload Device Photo</label>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    {imagePreview ? (
+                      <div className="relative rounded-xl overflow-hidden border border-teal-500/40 bg-slate-900 flex items-center justify-center p-4 h-56 shadow-inner">
+                        <img
+                          src={imagePreview}
+                          alt="Device hardware preview"
+                          className="max-h-full max-w-full object-contain rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute top-3 right-3 p-2 bg-red-500/90 hover:bg-red-600 text-white rounded-full transition-colors shadow-lg"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <span className="absolute bottom-3 left-3 bg-slate-900/90 text-emerald-400 text-[11px] px-3 py-1 rounded-full border border-emerald-500/30 font-mono shadow-sm">
+                          ✓ Image Loaded for AI Analysis
+                        </span>
+                      </div>
+                    ) : (
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                          isDragging 
+                            ? 'border-[#0D9488] bg-teal-100/50 scale-[1.01]' 
+                            : 'border-teal-500/30 hover:border-[#0D9488] bg-teal-50/20 hover:bg-teal-50/40'
+                        }`}
+                      >
+                        <UploadCloud className="w-10 h-10 text-[#0D9488] mx-auto mb-2 animate-bounce" />
+                        <p className="text-sm font-semibold text-[#1F2937]">
+                          {isDragging ? 'Drop your image file here' : 'Click to browse or drag & drop image here'}
+                        </p>
+                        <p className="text-xs text-[#6B7280] mt-1">Supports PNG, JPG, WEBP, GIF up to 10MB</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Symptom Input */}
+                  <div className="glass-card p-6 rounded-2xl space-y-4 shadow-sm bg-white/90 border border-gray-200">
+                    <label className="text-sm font-semibold text-[#1F2937] block">3. Describe Symptoms</label>
+                    <textarea
+                      value={symptom}
+                      onChange={(e) => setSymptom(e.target.value)}
+                      placeholder="E.g., Screen flickering near top bezel, rapid battery drain, or device heating up while charging..."
+                      className="w-full h-28 p-4 rounded-xl border border-gray-200 focus:outline-none focus:border-[#0D9488] text-sm text-[#1F2937] bg-white resize-none"
+                    />
+                  </div>
+
+                  {/* Action Button */}
+                  <button
+                    onClick={handleStartDiagnosis}
+                    className="w-full py-4 bg-[#0D9488] hover:bg-[#0b7a70] text-white font-semibold rounded-xl shadow-lg shadow-teal-600/20 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                    <Sparkles className="w-5 h-5" />
+                    <span>Start AI Diagnosis</span>
+                  </button>
+                </motion.div>
+              )}
+
+              {step === 'scanning' && (
+                <motion.div
+                  key="scanning-step"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="glass-card p-12 rounded-3xl text-center space-y-8 shadow-xl relative overflow-hidden bg-white/90 border border-gray-200"
+                >
+                  <div className="w-24 h-24 mx-auto rounded-full bg-teal-50 text-[#0D9488] flex items-center justify-center relative shadow-inner">
+                    <Cpu className="w-12 h-12 animate-pulse" />
+                    <div className="absolute inset-0 rounded-full border-2 border-[#0D9488] animate-ping opacity-25" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-bold text-[#1F2937]">AI Visual Scan in Progress</h2>
+                    <p className="text-xs text-[#6B7280]">Analyzing component degradation and checking local repair shop ratings...</p>
+                  </div>
+                  <div className="max-w-md mx-auto space-y-2">
+                    <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden p-0.5 border border-gray-200">
+                      <motion.div 
+                        className="h-full bg-gradient-to-r from-[#1E3A5F] via-[#0D9488] to-[#10B981] rounded-full"
+                        style={{ width: `${scanProgress}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs text-[#6B7280] font-mono">
+                      <span>Processing...</span>
+                      <span>{scanProgress}%</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {step === 'results' && (
+                <motion.div
+                  key="results-step"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-8"
+                >
+                  <div className="glass-card p-6 rounded-2xl flex items-center justify-between bg-white/90 border border-gray-200">
+                    <div>
+                      <span className="text-xs font-semibold text-[#0D9488] uppercase tracking-wider">Diagnosis Complete</span>
+                      <h2 className="text-xl font-bold text-[#1F2937]">{activeDiagnosis.title}</h2>
+                      <p className="text-xs text-[#6B7280] mt-1">{activeDiagnosis.desc}</p>
+                    </div>
+                    <button
+                      onClick={() => setStep('input')}
+                      className="p-2 text-[#6B7280] hover:text-[#1E3A5F] rounded-lg border border-gray-200 hover:bg-gray-50 flex items-center gap-1 text-xs shrink-0 ml-4"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Re-Diagnose
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="glass-card p-6 rounded-2xl text-center flex flex-col justify-between shadow-sm bg-white/90 border border-gray-200">
+                      <span className="text-xs font-semibold text-[#6B7280]">Repairability Score</span>
+                      <div className="my-4">
+                        <span className="text-5xl font-extrabold text-[#0D9488]">{animatedScore}</span>
+                        <span className="text-lg font-bold text-gray-400">/100</span>
+                      </div>
+                      <span className="inline-block px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full mx-auto">
+                        {animatedScore > 80 ? 'Highly Repairable' : 'Moderate Repair'}
+                      </span>
+                    </div>
+
+                    <div className="glass-card p-6 rounded-2xl text-center flex flex-col justify-between shadow-sm bg-white/90 border border-gray-200">
+                      <span className="text-xs font-semibold text-[#6B7280]">Estimated Cost Range</span>
+                      <div className="my-4">
+                        <span className="text-2xl md:text-3xl font-extrabold text-[#1E3A5F]">
+                          {activeDiagnosis.costRange[0]} - {activeDiagnosis.costRange[1]}
+                        </span>
+                      </div>
+                      <span className="text-xs text-[#6B7280]">Includes OEM parts & labor</span>
+                    </div>
+
+                    <div className="glass-card p-6 rounded-2xl text-center flex flex-col justify-between shadow-sm bg-white/90 border border-gray-200">
+                      <span className="text-xs font-semibold text-[#6B7280]">Estimated Service Time</span>
+                      <div className="my-4">
+                        <span className="text-2xl md:text-3xl font-extrabold text-[#1F2937]">{activeDiagnosis.time}</span>
+                      </div>
+                      <span className="text-xs text-emerald-600 font-medium">Same-day local service</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold text-[#1F2937]">Verified Repair Shops Nearby</h3>
+                        <p className="text-xs text-[#6B7280]">Sorted by highest Google Maps rating across Vijayawada, Guntur & Amaravati</p>
+                      </div>
+                      <span className="text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full">
+                        {GENUINE_LOCAL_SHOPS.length} Real Shops Found
+                      </span>
+                    </div>
+
+                    <div className="space-y-4">
+                      {GENUINE_LOCAL_SHOPS.map((shop, index) => (
+                        <motion.div
+                          key={shop.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.08 }}
+                          className="glass-card p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:shadow-md transition-shadow border border-slate-200 bg-white/90"
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-xl bg-teal-50 text-[#0D9488] flex items-center justify-center font-bold text-lg shrink-0">
+                              <Wrench className="w-6 h-6" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-bold text-[#1F2937] text-sm">{shop.name}</h4>
+                                <span className="inline-flex items-center gap-1 text-xs bg-amber-50 text-amber-800 px-2.5 py-0.5 rounded-full font-bold border border-amber-200">
+                                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /> {shop.rating.toFixed(1)} ({shop.reviewCount} reviews)
+                                </span>
+                              </div>
+                              <p className="text-xs text-[#6B7280] flex items-center gap-1.5">
+                                <MapPin className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                                <span>{shop.address}</span>
+                              </p>
+                              <p className="text-[11px] text-teal-700 font-medium flex items-center gap-2">
+                                <span>• {shop.specialty}</span>
+                                <span>• {shop.distance} from your area</span>
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-2 border-t sm:border-t-0 pt-3 sm:pt-0">
+                            <a
+                              href={`tel:${shop.phone}`}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E3A5F] hover:bg-[#152a45] text-white text-xs font-semibold rounded-xl transition-colors shadow-sm"
+                            >
+                              <Phone className="w-3.5 h-3.5" />
+                              <span>Call {shop.phone}</span>
+                            </a>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </main>
     </div>
   );
